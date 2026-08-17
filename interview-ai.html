@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';"
+  >
+  <title>Interview AI</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #111827;
+    }
+
+    body {
+      padding: 18px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 19px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      padding: 12px;
+      resize: vertical;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      outline: none;
+      font: inherit;
+      line-height: 1.45;
+    }
+
+    textarea:focus {
+      border-color: #6b7280;
+    }
+
+    button {
+      padding: 10px 16px;
+      margin-top: 11px;
+      border: 0;
+      border-radius: 7px;
+      background: #111827;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: default;
+    }
+
+    #answer {
+      white-space: pre-wrap;
+      line-height: 1.55;
+      min-height: 100px;
+      color: #374151;
+    }
+
+    .hint {
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+  <section class="card">
+    <h2>Interview Question</h2>
+
+    <textarea
+      id="question"
+      placeholder="Enter a practice interview question..."
+    ></textarea>
+
+    <button id="ask">Generate practice answer</button>
+
+    <div class="hint">
+      You can also use the ChatGPT-like input at the bottom of the desktop app.
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>AI Response</h2>
+    <div id="answer">No response yet.</div>
+  </section>
+
+  <script>
+    const question = document.getElementById("question");
+    const answer = document.getElementById("answer");
+    const askButton = document.getElementById("ask");
+
+    function setGenerating() {
+      answer.textContent = "Generating...";
+      askButton.disabled = true;
+    }
+
+    function setResponse(text) {
+      answer.textContent = text || "No response.";
+      askButton.disabled = false;
+    }
+
+    function askFromIframe() {
+      const text = question.value.trim();
+
+      if (!text) {
+        answer.textContent = "Enter a question first.";
+        return;
+      }
+
+      window.parent.postMessage(
+        {
+          type: "QUESTION_FROM_FRAME",
+          question: text
+        },
+        window.location.origin
+      );
+    }
+
+    askButton.addEventListener("click", askFromIframe);
+
+    window.addEventListener("message", (event) => {
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
+      if (!event.data || typeof event.data !== "object") {
+        return;
+      }
+
+      switch (event.data.type) {
+        case "AI_GENERATING":
+          setGenerating();
+          break;
+
+        case "AI_RESPONSE":
+          setResponse(event.data.answer);
+          break;
+
+        case "NEW_INTERVIEW":
+        case "CLEAR":
+          question.value = "";
+          answer.textContent = "No response yet.";
+          askButton.disabled = false;
+          break;
+      }
+    });
+
+    window.parent.postMessage(
+      {
+        type: "FRAME_READY"
+      },
+      window.location.origin
+    );
+  </script>
+</body>
+</html>

@@ -1,0 +1,1239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self';
+             style-src 'self' 'unsafe-inline';
+             script-src 'self' 'unsafe-inline';
+             connect-src 'self' http://127.0.0.1:8000;"
+  >
+
+  <title>Interview AI</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+      background: #212121;
+      color: #ececec;
+    }
+
+    .app {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+    }
+
+    /* =========================
+       SIDEBAR
+    ========================= */
+
+    .sidebar {
+      width: 250px;
+      flex: 0 0 250px;
+
+      background: #171717;
+
+      display: flex;
+      flex-direction: column;
+
+      padding: 12px;
+
+      z-index: 10;
+    }
+
+    .brand {
+      padding: 12px;
+
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .new-chat {
+      width: 100%;
+
+      border: 1px solid #444;
+      background: transparent;
+
+      color: #fff;
+
+      border-radius: 8px;
+
+      padding: 11px 12px;
+
+      cursor: pointer;
+      text-align: left;
+
+      font-size: 14px;
+
+      margin-bottom: 8px;
+    }
+
+    .new-chat:hover {
+      background: #2a2a2a;
+    }
+
+    .new-chat.active {
+      background: #2a2a2a;
+      border-color: #666;
+    }
+
+    .history-title {
+      color: #8e8e8e;
+
+      font-size: 12px;
+
+      padding: 18px 12px 8px;
+    }
+
+    .history-item {
+      padding: 10px 12px;
+
+      border-radius: 7px;
+
+      cursor: pointer;
+
+      font-size: 14px;
+
+      color: #ddd;
+
+      white-space: nowrap;
+
+      overflow: hidden;
+
+      text-overflow: ellipsis;
+    }
+
+    .history-item:hover {
+      background: #2a2a2a;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+
+      border-top: 1px solid #333;
+
+      padding-top: 10px;
+    }
+
+    /* =========================
+       MAIN
+    ========================= */
+
+    .main {
+      flex: 1;
+
+      min-width: 0;
+
+      display: flex;
+      flex-direction: column;
+
+      background: #212121;
+    }
+
+    /* =========================
+       TOP BAR
+    ========================= */
+
+    .topbar {
+      height: 58px;
+
+      flex: 0 0 58px;
+
+      border-bottom: 1px solid #333;
+
+      display: flex;
+
+      align-items: center;
+
+      padding: 0 22px;
+
+      z-index: 10;
+    }
+
+    .topbar-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .mode {
+      margin-left: 15px;
+
+      font-size: 12px;
+
+      padding: 5px 9px;
+
+      border-radius: 6px;
+
+      background: #303030;
+
+      color: #aaa;
+    }
+
+    .status {
+      margin-left: auto;
+
+      font-size: 12px;
+
+      color: #aaa;
+    }
+
+    .status.connected {
+      color: #6ee7b7;
+    }
+
+    .status.error {
+      color: #fca5a5;
+    }
+
+    /* =========================
+       CONTENT
+    ========================= */
+
+    .content {
+      flex: 1;
+
+      min-height: 0;
+
+      display: flex;
+      flex-direction: column;
+
+      overflow: hidden;
+    }
+
+    .welcome {
+      padding: 18px 20px 5px;
+
+      text-align: center;
+
+      font-size: 24px;
+
+      font-weight: 650;
+    }
+
+    .subtitle {
+      padding: 0 20px 12px;
+
+      text-align: center;
+
+      color: #999;
+
+      font-size: 13px;
+    }
+
+    /* =========================
+       BROWSER TOOLBAR
+    ========================= */
+
+    .browser-toolbar {
+      display: none;
+
+      height: 46px;
+
+      flex: 0 0 46px;
+
+      align-items: center;
+
+      gap: 6px;
+
+      padding: 6px 10px;
+
+      background: #1b1b1b;
+
+      border-bottom: 1px solid #333;
+    }
+
+    .browser-toolbar.visible {
+      display: flex;
+    }
+
+    .browser-button {
+      width: 32px;
+      height: 32px;
+
+      border: 0;
+
+      border-radius: 7px;
+
+      background: transparent;
+
+      color: #ddd;
+
+      cursor: pointer;
+
+      font-size: 17px;
+    }
+
+    .browser-button:hover {
+      background: #303030;
+    }
+
+    .address-bar {
+      flex: 1;
+
+      height: 32px;
+
+      border: 1px solid #444;
+
+      border-radius: 7px;
+
+      background: #252525;
+
+      color: #ddd;
+
+      outline: none;
+
+      padding: 0 10px;
+
+      font-size: 13px;
+    }
+
+    .address-bar:focus {
+      border-color: #666;
+    }
+
+    .go-button {
+      height: 32px;
+
+      padding: 0 12px;
+
+      border: 0;
+
+      border-radius: 7px;
+
+      background: #fff;
+
+      color: #111;
+
+      cursor: pointer;
+
+      font-size: 13px;
+    }
+
+    /* =========================
+       FRAME AREA
+    ========================= */
+
+    .frame-wrap {
+      flex: 1;
+
+      min-height: 0;
+
+      width: min(1000px, 100%);
+
+      margin: 0 auto;
+
+      padding: 0 18px 12px;
+
+      position: relative;
+    }
+
+    /*
+      This is only a placeholder.
+
+      Electron's WebContentsView will be placed
+      over this area when ChatGPT mode is active.
+    */
+
+    #browserView {
+      width: 100%;
+      height: 100%;
+
+      border-radius: 12px;
+
+      background: #f5f7fb;
+    }
+
+    /* =========================
+       INTERVIEW PLACEHOLDER
+    ========================= */
+
+    .interview-screen {
+      width: 100%;
+      height: 100%;
+
+      border-radius: 12px;
+
+      background: #f5f7fb;
+
+      color: #111;
+
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+
+      justify-content: center;
+
+      text-align: center;
+
+      padding: 30px;
+    }
+
+    .interview-screen h2 {
+      margin: 0 0 10px;
+
+      font-size: 24px;
+    }
+
+    .interview-screen p {
+      margin: 0;
+
+      color: #666;
+
+      font-size: 14px;
+    }
+
+    /* =========================
+       COMPOSER
+    ========================= */
+
+    .composer {
+      width: min(800px, calc(100% - 36px));
+
+      margin: 0 auto 16px;
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      background: #2f2f2f;
+
+      border: 1px solid #4a4a4a;
+
+      border-radius: 14px;
+
+      padding: 8px 9px 8px 13px;
+    }
+
+    .composer input {
+      flex: 1;
+
+      min-width: 0;
+
+      border: 0;
+
+      outline: 0;
+
+      background: transparent;
+
+      color: #fff;
+
+      font-size: 14px;
+    }
+
+    .composer input::placeholder {
+      color: #999;
+    }
+
+    .send {
+      width: 36px;
+      height: 36px;
+
+      border: 0;
+
+      border-radius: 9px;
+
+      background: #fff;
+
+      color: #111;
+
+      cursor: pointer;
+
+      font-size: 18px;
+
+      font-weight: 700;
+    }
+
+    .send:disabled {
+      opacity: 0.5;
+
+      cursor: default;
+    }
+
+    /* =========================
+       HIDDEN
+    ========================= */
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 800px) {
+      .sidebar {
+        width: 200px;
+        flex-basis: 200px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- =========================================
+       SIDEBAR
+  ========================================== -->
+
+  <aside class="sidebar">
+
+    <div class="brand">
+      Interview AI
+    </div>
+
+    <button
+      class="new-chat active"
+      id="interviewMode"
+    >
+      ＋ New interview
+    </button>
+
+    <button
+      class="new-chat"
+      id="chatGPTMode"
+    >
+      🤖 ChatGPT
+    </button>
+
+    <div class="history-title">
+      Recent
+    </div>
+
+    <div class="history-item">
+      Python Interview
+    </div>
+
+    <div class="history-item">
+      FastAPI Interview
+    </div>
+
+    <div class="history-item">
+      Generative AI
+    </div>
+
+    <div class="history-item">
+      Backend Interview
+    </div>
+
+    <div class="sidebar-bottom">
+
+      <div class="history-item">
+        ⚙ Settings
+      </div>
+
+      <div class="history-item">
+        👤 Account
+      </div>
+
+    </div>
+
+  </aside>
+
+
+  <!-- =========================================
+       MAIN
+  ========================================== -->
+
+  <main class="main">
+
+    <!-- TOP BAR -->
+
+    <header class="topbar">
+
+      <div
+        class="topbar-title"
+        id="topbarTitle"
+      >
+        Interview AI
+      </div>
+
+      <div
+        class="mode"
+        id="mode"
+      >
+        Interview Mode
+      </div>
+
+      <div
+        id="status"
+        class="status"
+      >
+        Checking backend...
+      </div>
+
+    </header>
+
+
+    <!-- CONTENT -->
+
+    <section class="content">
+
+      <!-- INTERVIEW HEADER -->
+
+      <div
+        class="welcome"
+        id="welcome"
+      >
+        How can I help you prepare?
+      </div>
+
+      <div
+        class="subtitle"
+        id="subtitle"
+      >
+        Practice technical interview questions with AI.
+      </div>
+
+
+      <!-- =====================================
+           BROWSER TOOLBAR
+      ====================================== -->
+
+      <div
+        class="browser-toolbar"
+        id="browserToolbar"
+      >
+
+        <button
+          class="browser-button"
+          id="back"
+          title="Back"
+        >
+          ←
+        </button>
+
+        <button
+          class="browser-button"
+          id="forward"
+          title="Forward"
+        >
+          →
+        </button>
+
+        <button
+          class="browser-button"
+          id="reload"
+          title="Reload"
+        >
+          ↻
+        </button>
+
+        <input
+          id="addressBar"
+          class="address-bar"
+          type="text"
+          value="https://chatgpt.com/"
+          autocomplete="off"
+        >
+
+        <button
+          class="go-button"
+          id="go"
+        >
+          Go
+        </button>
+
+      </div>
+
+
+      <!-- =====================================
+           BROWSER / INTERVIEW AREA
+      ====================================== -->
+
+      <div
+        class="frame-wrap"
+        id="frameWrap"
+      >
+
+        <!--
+          Electron WebContentsView will be positioned
+          over this element when ChatGPT mode is active.
+        -->
+
+        <div
+          id="browserView"
+          class="hidden"
+        ></div>
+
+
+        <!-- Interview UI -->
+
+        <div
+          id="interviewScreen"
+          class="interview-screen"
+        >
+
+          <h2>
+            Interview AI
+          </h2>
+
+          <p>
+            Ask an interview question below and
+            get an AI-generated answer.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================
+           COMPOSER
+      ====================================== -->
+
+      <div
+        class="composer"
+        id="composer"
+      >
+
+        <input
+          id="chatInput"
+          type="text"
+          autocomplete="off"
+          placeholder="Ask an interview question..."
+        >
+
+        <button
+          id="send"
+          class="send"
+          title="Send"
+        >
+          ↑
+        </button>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<script>
+
+  /* =========================================
+     ELEMENTS
+  ========================================== */
+
+  const status =
+    document.getElementById("status");
+
+  const input =
+    document.getElementById("chatInput");
+
+  const send =
+    document.getElementById("send");
+
+  const interviewMode =
+    document.getElementById("interviewMode");
+
+  const chatGPTMode =
+    document.getElementById("chatGPTMode");
+
+  const interviewScreen =
+    document.getElementById("interviewScreen");
+
+  const browserView =
+    document.getElementById("browserView");
+
+  const browserToolbar =
+    document.getElementById("browserToolbar");
+
+  const composer =
+    document.getElementById("composer");
+
+  const welcome =
+    document.getElementById("welcome");
+
+  const subtitle =
+    document.getElementById("subtitle");
+
+  const topbarTitle =
+    document.getElementById("topbarTitle");
+
+  const mode =
+    document.getElementById("mode");
+
+  const addressBar =
+    document.getElementById("addressBar");
+
+  const back =
+    document.getElementById("back");
+
+  const forward =
+    document.getElementById("forward");
+
+  const reload =
+    document.getElementById("reload");
+
+  const go =
+    document.getElementById("go");
+
+
+  /* =========================================
+     BACKEND HEALTH
+  ========================================== */
+
+  async function checkBackend() {
+
+    try {
+
+      const result =
+        await window.interviewAI.health();
+
+      if (result && result.ok) {
+
+        status.textContent =
+          "● Backend connected";
+
+        status.className =
+          "status connected";
+
+      } else {
+
+        status.textContent =
+          "● Backend unavailable";
+
+        status.className =
+          "status error";
+      }
+
+    } catch (error) {
+
+      status.textContent =
+        "● Backend unavailable";
+
+      status.className =
+        "status error";
+    }
+  }
+
+
+  /* =========================================
+     ASK INTERVIEW AI
+  ========================================== */
+
+  async function askQuestion() {
+
+    const question =
+      input.value.trim();
+
+    if (!question) {
+      return;
+    }
+
+    input.value = "";
+
+    send.disabled = true;
+
+    try {
+
+      const result =
+        await window.interviewAI.askAI(
+          question
+        );
+
+      /*
+       * You can replace this with your
+       * real interview answer UI later.
+       */
+
+      const answer =
+        result &&
+        (result.answer || result.error)
+          ? (result.answer || result.error)
+          : "No response.";
+
+      interviewScreen.innerHTML = `
+        <h2>AI Answer</h2>
+
+        <p style="
+          max-width: 750px;
+          line-height: 1.7;
+          white-space: pre-wrap;
+        ">${escapeHtml(answer)}</p>
+      `;
+
+    } catch (error) {
+
+      interviewScreen.innerHTML = `
+        <h2>Error</h2>
+
+        <p>
+          ${escapeHtml(error.message)}
+        </p>
+      `;
+
+    } finally {
+
+      send.disabled = false;
+    }
+  }
+
+
+  /* =========================================
+     HTML ESCAPE
+  ========================================== */
+
+  function escapeHtml(value) {
+
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+
+  /* =========================================
+     INTERVIEW MODE
+  ========================================== */
+
+  async function showInterviewMode() {
+
+    /*
+     * Hide ChatGPT WebContentsView
+     */
+
+    await window.interviewAI.chatGPT.hide();
+
+    browserToolbar.classList.remove(
+      "visible"
+    );
+
+    browserView.classList.add(
+      "hidden"
+    );
+
+    interviewScreen.classList.remove(
+      "hidden"
+    );
+
+    composer.classList.remove(
+      "hidden"
+    );
+
+    welcome.classList.remove(
+      "hidden"
+    );
+
+    subtitle.classList.remove(
+      "hidden"
+    );
+
+    topbarTitle.textContent =
+      "Interview AI";
+
+    mode.textContent =
+      "Interview Mode";
+
+    interviewMode.classList.add(
+      "active"
+    );
+
+    chatGPTMode.classList.remove(
+      "active"
+    );
+
+    input.placeholder =
+      "Ask an interview question...";
+  }
+
+
+  /* =========================================
+     CHATGPT MODE
+  ========================================== */
+
+  async function showChatGPTMode() {
+
+    /*
+     * Hide Interview UI
+     */
+
+    interviewScreen.classList.add(
+      "hidden"
+    );
+
+    composer.classList.add(
+      "hidden"
+    );
+
+    welcome.classList.add(
+      "hidden"
+    );
+
+    subtitle.classList.add(
+      "hidden"
+    );
+
+    /*
+     * Show browser toolbar
+     */
+
+    browserToolbar.classList.add(
+      "visible"
+    );
+
+    browserView.classList.remove(
+      "hidden"
+    );
+
+    topbarTitle.textContent =
+      "ChatGPT";
+
+    mode.textContent =
+      "Browser Mode";
+
+    interviewMode.classList.remove(
+      "active"
+    );
+
+    chatGPTMode.classList.add(
+      "active"
+    );
+
+    /*
+     * Show Electron WebContentsView
+     */
+
+    await window.interviewAI.chatGPT.show();
+
+    /*
+     * Update URL
+     */
+
+    try {
+
+      const currentURL =
+        await window.interviewAI.chatGPT.getURL();
+
+      if (currentURL) {
+        addressBar.value = currentURL;
+      }
+
+    } catch (error) {
+
+      console.error(
+        "Unable to get ChatGPT URL:",
+        error
+      );
+    }
+  }
+
+
+  /* =========================================
+     CHATGPT NAVIGATION
+  ========================================== */
+
+  async function navigate() {
+
+    let url =
+      addressBar.value.trim();
+
+    if (!url) {
+      return;
+    }
+
+    /*
+     * Add https:// if user enters
+     * chatgpt.com directly.
+     */
+
+    if (
+      !url.startsWith("http://") &&
+      !url.startsWith("https://")
+    ) {
+
+      url =
+        "https://" + url;
+    }
+
+    /*
+     * Only allow ChatGPT.
+     *
+     * main.js also validates this.
+     */
+
+    try {
+
+      const parsed =
+        new URL(url);
+
+      if (
+        parsed.hostname !== "chatgpt.com" &&
+        !parsed.hostname.endsWith(
+          ".chatgpt.com"
+        )
+      ) {
+
+        alert(
+          "Only chatgpt.com is allowed."
+        );
+
+        return;
+      }
+
+    } catch {
+
+      alert("Invalid URL.");
+
+      return;
+    }
+
+    const result =
+      await window.interviewAI.chatGPT.navigate(
+        url
+      );
+
+    if (!result || !result.ok) {
+
+      alert(
+        result?.error ||
+        "Unable to navigate."
+      );
+
+      return;
+    }
+
+    addressBar.value = url;
+  }
+
+
+  /* =========================================
+     BROWSER BUTTONS
+  ========================================== */
+
+  back.addEventListener(
+    "click",
+    async () => {
+
+      await window.interviewAI.chatGPT.back();
+
+    }
+  );
+
+
+  forward.addEventListener(
+    "click",
+    async () => {
+
+      await window.interviewAI.chatGPT.forward();
+
+    }
+  );
+
+
+  reload.addEventListener(
+    "click",
+    async () => {
+
+      await window.interviewAI.chatGPT.reload();
+
+    }
+  );
+
+
+  go.addEventListener(
+    "click",
+    navigate
+  );
+
+
+  addressBar.addEventListener(
+    "keydown",
+    (event) => {
+
+      if (event.key === "Enter") {
+
+        event.preventDefault();
+
+        navigate();
+      }
+    }
+  );
+
+
+  /* =========================================
+     INTERVIEW BUTTON
+  ========================================== */
+
+  interviewMode.addEventListener(
+    "click",
+    showInterviewMode
+  );
+
+
+  /* =========================================
+     CHATGPT BUTTON
+  ========================================== */
+
+  chatGPTMode.addEventListener(
+    "click",
+    showChatGPTMode
+  );
+
+
+  /* =========================================
+     SEND QUESTION
+  ========================================== */
+
+  send.addEventListener(
+    "click",
+    askQuestion
+  );
+
+
+  input.addEventListener(
+    "keydown",
+    (event) => {
+
+      if (event.key === "Enter") {
+
+        event.preventDefault();
+
+        askQuestion();
+      }
+    }
+  );
+
+
+  /* =========================================
+     INITIAL STATE
+  ========================================== */
+
+  showInterviewMode();
+
+  checkBackend();
+
+</script>
+
+</body>
+</html>
