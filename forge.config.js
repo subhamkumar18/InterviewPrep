@@ -5,19 +5,19 @@ module.exports = {
   packagerConfig: {
     asar: true,
 
-    // Forge/Electron Packager will use:
-    // macOS  -> assets/icon.icns
-    // Windows -> assets/icon.ico
-    // Linux   -> assets/icon.png
-   // icon: './assets/icon',
+    // Don't use one common icon here when cross-building.
+    // Each platform gets its own icon through the appropriate maker.
   },
 
   rebuildConfig: {},
 
   makers: [
-    // Windows
+    // =========================
+    // WINDOWS
+    // =========================
     {
       name: '@electron-forge/maker-squirrel',
+      platforms: ['win32'],
       config: {
         name: 'InterviewAI',
         setupExe: 'InterviewAI-Setup.exe',
@@ -25,13 +25,17 @@ module.exports = {
       },
     },
 
-    // macOS
+    // =========================
+    // MACOS
+    // =========================
     {
       name: '@electron-forge/maker-zip',
       platforms: ['darwin'],
     },
 
-    // Ubuntu / Debian
+    // =========================
+    // UBUNTU / DEBIAN
+    // =========================
     {
       name: '@electron-forge/maker-deb',
       platforms: ['linux'],
@@ -45,7 +49,9 @@ module.exports = {
       },
     },
 
-    // Optional RPM Linux package
+    // =========================
+    // OPTIONAL RPM
+    // =========================
     {
       name: '@electron-forge/maker-rpm',
       platforms: ['linux'],
@@ -64,6 +70,8 @@ module.exports = {
       [FuseV1Options.RunAsNode]: false,
 
       [FuseV1Options.EnableCookieEncryption]: true,
+
+      [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
 
       [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
 
