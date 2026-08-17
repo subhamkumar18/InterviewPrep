@@ -5,38 +5,50 @@ module.exports = {
   packagerConfig: {
     asar: true,
 
-    // IMPORTANT:
-    // Do not include the extension here.
-    // Electron Packager automatically selects:
-    // icon.icns on macOS
-    // icon.ico on Windows
-    // icon.png on Linux
-   icon: './assets/icon.png',
+    // Forge/Electron Packager will use:
+    // macOS  -> assets/icon.icns
+    // Windows -> assets/icon.ico
+    // Linux   -> assets/icon.png
+    icon: './assets/icon',
   },
 
   rebuildConfig: {},
 
   makers: [
+    // Windows
     {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: 'InterviewAI',
+        setupExe: 'InterviewAI-Setup.exe',
+        setupIcon: './assets/icon.ico',
       },
     },
 
+    // macOS
     {
       name: '@electron-forge/maker-zip',
       platforms: ['darwin'],
     },
 
+    // Ubuntu / Debian
     {
       name: '@electron-forge/maker-deb',
-      config: {},
+      platforms: ['linux'],
+      config: {
+        options: {
+          maintainer: 'Interview AI',
+          homepage: 'https://example.com',
+          description: 'Interview AI desktop application',
+          productName: 'Interview AI',
+        },
+      },
     },
 
+    // Optional RPM Linux package
     {
       name: '@electron-forge/maker-rpm',
-      config: {},
+      platforms: ['linux'],
     },
   ],
 
