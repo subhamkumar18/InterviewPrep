@@ -9,7 +9,7 @@ module.exports = {
     // macOS  -> assets/icon.icns
     // Windows -> assets/icon.ico
     // Linux   -> assets/icon.png
-    icon: './assets/icon',
+   // icon: './assets/icon',
   },
 
   rebuildConfig: {},
